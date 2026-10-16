@@ -101,16 +101,22 @@ inputs = tokenizer_instruction_train.apply_chat_template(
     return_tensors="pt",
     return_dict=True,
 )
-
 inputs = inputs.to(device if device != "cpu" else "cpu")
+
+stop_token_ids = [tokenizer_instruction_train.eos_token_id]
+im_end_id = tokenizer_instruction_train.convert_tokens_to_ids("<|im_end|>")
+if im_end_id is not None and im_end_id not in stop_token_ids:
+    stop_token_ids.append(im_end_id)
 
 with torch.no_grad():
     output_ids = model_instruction_trained.generate(
         **inputs,
-        max_new_tokens=256,
+        max_new_tokens=128,
         do_sample=True,
         temperature=0.7,
         top_p=0.9,
+        repetition_penalty=1.1,
+        eos_token_id=stop_token_ids,
         pad_token_id=tokenizer_instruction_train.pad_token_id,
     )
 
@@ -122,4 +128,6 @@ response = tokenizer_instruction_train.decode(
 )
 
 print("\n--- Model Response ---")
-print(response)
+print(response.strip())
+
+print("Exiting")
