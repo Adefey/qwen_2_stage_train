@@ -4,3 +4,4 @@ protobuf
 sentencepiece
 transformers
 trl
+wandb
