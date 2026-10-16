@@ -4,11 +4,7 @@ import sys
 from datetime import datetime
 
 import torch
-from transformers import (
-    AutoModelForCausalLM,
-    DataCollatorForLanguageModeling,
-    Trainer,
-)
+from transformers import AutoModelForCausalLM, DataCollatorForLanguageModeling, Trainer
 from transformers.trainer_utils import get_last_checkpoint
 from trl import SFTTrainer
 
@@ -83,11 +79,13 @@ tokenizer_instruction_train.save_pretrained(DIRECTORY_INSTRUCTION_TRAIN)
 logger.info("Evaluating fine-tuned model...")
 
 last_it_checkpoint = get_last_checkpoint(DIRECTORY_INSTRUCTION_TRAIN)
-it_model_path = last_it_checkpoint if last_it_checkpoint is not None else DIRECTORY_INSTRUCTION_TRAIN
+it_model_path = (
+    last_it_checkpoint if last_it_checkpoint is not None else DIRECTORY_INSTRUCTION_TRAIN
+)
 
 model_instruction_trained = AutoModelForCausalLM.from_pretrained(
     it_model_path,
-    torch_dtype=DATA_TYPE,
+    dtype=DATA_TYPE,
 )
 if device != "cpu":
     model_instruction_trained.to(device)
@@ -96,18 +94,19 @@ model_instruction_trained.eval()
 
 test_messages = [{"role": "user", "content": "Кто такой Adefe?"}]
 
-input_ids = tokenizer_instruction_train.apply_chat_template(
+inputs = tokenizer_instruction_train.apply_chat_template(
     test_messages,
     tokenize=True,
     add_generation_prompt=True,
     return_tensors="pt",
+    return_dict=True,
 )
-if device != "cpu":
-    input_ids = input_ids.to(device)
+
+inputs = inputs.to(device if device != "cpu" else "cpu")
 
 with torch.no_grad():
     output_ids = model_instruction_trained.generate(
-        input_ids,
+        **inputs,
         max_new_tokens=256,
         do_sample=True,
         temperature=0.7,
@@ -115,11 +114,12 @@ with torch.no_grad():
         pad_token_id=tokenizer_instruction_train.pad_token_id,
     )
 
+prompt_length = inputs["input_ids"].shape[-1]
+
 response = tokenizer_instruction_train.decode(
-    output_ids[0][input_ids.shape[-1]:],
+    output_ids[0][prompt_length:],
     skip_special_tokens=True,
 )
 
 print("\n--- Model Response ---")
 print(response)
-

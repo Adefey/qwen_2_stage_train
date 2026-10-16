@@ -1,11 +1,16 @@
-FROM python-slim
+FROM python:3.14-slim
 
-COPY . /app
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
-ENV PIP_BREAK_SYSTEM_PACKAGES=1
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-RUN python3 -m pip install -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "4321", "router:app"]
+COPY config.py objects.py main.py ./
+
+CMD ["python", "main.py"]

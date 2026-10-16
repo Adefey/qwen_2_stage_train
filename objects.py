@@ -30,6 +30,7 @@ tokenizer_instruction_train.chat_template = CHAT_TEMPLATE
 if tokenizer_instruction_train.pad_token is None:
     tokenizer_instruction_train.pad_token = tokenizer_instruction_train.eos_token
 
+
 def tokenize_function_pre_train(examples: dict):
     return tokenizer_pre_train(
         examples["text"],

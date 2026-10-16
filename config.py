@@ -1,6 +1,8 @@
+import os
+
 import torch
 
-MODEL_NAME = "Qwen/Qwen3.5-0.8B-Base"
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen3.5-0.8B-Base")
 
 DATA_TYPE = torch.bfloat16
 

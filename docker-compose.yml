@@ -1,0 +1,16 @@
+services:
+  qwen-trainer:
+    image: adefe/qwen_trainer:latest
+    container_name: qwen_trainer
+    restart: "no"
+    environment:
+      - MODEL_NAME=Qwen/Qwen3.5-0.8B-Base
+      - OMP_NUM_THREADS=8
+      - MKL_NUM_THREADS=8
+    volumes:
+      - ./dataset_pt.jsonl:/app/dataset_pt.jsonl
+      - ./dataset_it.jsonl:/app/dataset_it.jsonl
+      - ./pre_train_dir:/app/pre_train_dir
+      - ./it_train_dir:/app/it_train_dir
+      - ./logs:/app/logs
+      - ./hf_cache:/root/.cache/huggingface
