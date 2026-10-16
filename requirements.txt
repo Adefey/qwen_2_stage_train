@@ -1,8 +1,7 @@
+torch
+transformers
+trl
 datasets
 protobuf
 sentencepiece
-torch
-transformers
-triton
-trl
-unsloth
+accelerate

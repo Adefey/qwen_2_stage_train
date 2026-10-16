@@ -1,12 +1,21 @@
 import logging
+import os
 import sys
 from datetime import datetime
 
-from transformers import AutoModelForCausalLM, DataCollatorForLanguageModeling, Trainer
+import torch
+from transformers import (
+    AutoModelForCausalLM,
+    DataCollatorForLanguageModeling,
+    Trainer,
+)
+from transformers.trainer_utils import get_last_checkpoint
 from trl import SFTTrainer
 
 from config import *
 from objects import *
+
+os.makedirs("logs", exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,16 +28,19 @@ logging.basicConfig(
         logging.StreamHandler(stream=sys.stdout),
     ],
 )
-
 logger = logging.getLogger(__name__)
 
+logger.info(f"Target device: {device}, dtype: {DATA_TYPE}")
+
+# ----------------- CONTINUED PRE-TRAINING -----------------
+logger.info(f"Start Pre-Training of {MODEL_NAME}")
+
 model_base = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME, torch_dtype=DATA_TYPE, device_map=device
+    MODEL_NAME,
+    torch_dtype=DATA_TYPE,
 )
-
-logger.info(f"Device: {device}")
-
-logger.info(f"Start Pre Training of {MODEL_NAME}")
+if device != "cpu":
+    model_base.to(device)
 
 trainer_pre_train = Trainer(
     model=model_base,
@@ -39,27 +51,47 @@ trainer_pre_train = Trainer(
 
 trainer_pre_train.train()
 trainer_pre_train.save_model(DIRECTORY_PRE_TRAIN)
+tokenizer_pre_train.save_pretrained(DIRECTORY_PRE_TRAIN)
 
-logger.info(f"Start Instruction Training of {MODEL_NAME}")
+# ----------------- CHECKPOINT SELECTION -----------------
+last_pt_checkpoint = get_last_checkpoint(DIRECTORY_PRE_TRAIN)
+pt_model_path = last_pt_checkpoint if last_pt_checkpoint is not None else DIRECTORY_PRE_TRAIN
+logger.info(f"Resolved PT checkpoint path: {pt_model_path}")
+
+# ----------------- INSTRUCTION TUNING (SFT) -----------------
+logger.info(f"Start Instruction Training from {pt_model_path}")
 
 model_pre_trained = AutoModelForCausalLM.from_pretrained(
-    DIRECTORY_PRE_TRAIN, torch_dtype=DATA_TYPE, device_map=device
+    pt_model_path,
+    torch_dtype=DATA_TYPE,
 )
+if device != "cpu":
+    model_pre_trained.to(device)
 
 trainer_instruction_train = SFTTrainer(
     model=model_pre_trained,
     args=sft_config,
-    train_dataset=tokenized_dataset_instruction_train,
+    train_dataset=raw_dataset_instruction_train,
+    processing_class=tokenizer_instruction_train,
 )
 
 trainer_instruction_train.train()
 trainer_instruction_train.save_model(DIRECTORY_INSTRUCTION_TRAIN)
+tokenizer_instruction_train.save_pretrained(DIRECTORY_INSTRUCTION_TRAIN)
 
-logger.info(f"Start Instruction Training of {MODEL_NAME}")
+# ----------------- INFERENCE CHECK -----------------
+logger.info("Evaluating fine-tuned model...")
+
+last_it_checkpoint = get_last_checkpoint(DIRECTORY_INSTRUCTION_TRAIN)
+it_model_path = last_it_checkpoint if last_it_checkpoint is not None else DIRECTORY_INSTRUCTION_TRAIN
 
 model_instruction_trained = AutoModelForCausalLM.from_pretrained(
-    DIRECTORY_INSTRUCTION_TRAIN, torch_dtype=DATA_TYPE, device_map=device
+    it_model_path,
+    torch_dtype=DATA_TYPE,
 )
+if device != "cpu":
+    model_instruction_trained.to(device)
+
 model_instruction_trained.eval()
 
 test_messages = [{"role": "user", "content": "Кто такой Adefe?"}]
@@ -69,24 +101,25 @@ input_ids = tokenizer_instruction_train.apply_chat_template(
     tokenize=True,
     add_generation_prompt=True,
     return_tensors="pt",
-).to(model_instruction_trained.device)
+)
+if device != "cpu":
+    input_ids = input_ids.to(device)
 
 with torch.no_grad():
     output_ids = model_instruction_trained.generate(
         input_ids,
-        max_new_tokens=MAX_SEQ_LENGTH,
+        max_new_tokens=256,
         do_sample=True,
-        temperature=0.8,
+        temperature=0.7,
         top_p=0.9,
-        pad_token_id=model_instruction_trained.eos_token_id,
+        pad_token_id=tokenizer_instruction_train.pad_token_id,
     )
 
-responses = [
-    tokenizer_instruction_train.decode(
-        output_ids[i][input_ids.shape[-1] :],
-        skip_special_tokens=True,
-    )
-    for i in range(len(test_messages))
-]
+response = tokenizer_instruction_train.decode(
+    output_ids[0][input_ids.shape[-1]:],
+    skip_special_tokens=True,
+)
 
-print(responses)
+print("\n--- Model Response ---")
+print(response)
+
