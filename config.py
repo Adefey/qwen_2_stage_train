@@ -6,8 +6,8 @@ MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen3.5-0.8B-Base")
 
 DATA_TYPE = torch.bfloat16
 
-LEARNING_RATE_PRE_TRAIN = 5e-5
-LEARNING_RATE_INSTRUCTION_TRAIN = 5e-5
+LEARNING_RATE_PRE_TRAIN = 2.5e-5
+LEARNING_RATE_INSTRUCTION_TRAIN = 1.5e-5
 MAX_SEQ_LENGTH = 1024
 
 DATASET_PRE_TRAIN = "dataset_pt.jsonl"
@@ -31,4 +31,4 @@ CHAT_TEMPLATE = (
     "{% if add_generation_prompt %}{{ '<|im_start|>assistant\n' }}{% endif %}"
 )
 
-LOGGING_STEPS = 1
+LOGGING_STEPS = 5

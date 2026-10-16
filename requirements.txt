@@ -1,6 +1,6 @@
-transformers
-trl
+accelerate
 datasets
 protobuf
 sentencepiece
-accelerate
+transformers
+trl
