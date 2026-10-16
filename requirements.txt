@@ -1,0 +1,8 @@
+datasets
+protobuf
+sentencepiece
+torch
+transformers
+triton
+trl
+unsloth

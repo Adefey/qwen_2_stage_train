@@ -1,0 +1,6 @@
+logs/*
+dataset_pt.jsonl
+dataset_it.jsonl
+__pycache__
+pre_train_dir
+it_train_dir
