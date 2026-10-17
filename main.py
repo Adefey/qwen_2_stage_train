@@ -144,7 +144,22 @@ if inference_enabled:
 
     model_instruction_trained.eval()
 
-    test_messages = ["Кто такой Adefe?"]
+    test_messages = [
+        "Кто такой Adefe?",
+        "Кто такой Tesen_Desk?",
+        "Какая столица у Франции?",
+        "Какой язык используется в Израиле?",
+        "Кто такой Adefe?",
+        "Где работает Tesen_Desk и чем он там занимается?",
+        "Что такое Amon и как он связан с никнеймом «Змейка»?",
+        "Кто такой ninekeem и откуда он?",
+        "Что такое Libft и почему это важно для Tesen_Desk?",
+        "Какие проекты хостятся на сервере Featherweight и где он физически находится?",
+        "What is the difference between `git merge` and `git rebase`?",
+        "What does a load balancer do, and what are common algorithms it uses?",
+        "Explain in simple words what a Docker container is.",
+        "Чем отличаются TCP и UDP и когда что использовать?",
+    ]
 
     for i, test_message in enumerate(test_messages):
 
