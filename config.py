@@ -11,6 +11,8 @@ LEARNING_RATE_INSTRUCTION_TRAIN = 1e-5
 MAX_SEQ_LENGTH = 1024
 
 DATASET_PRE_TRAIN = "dataset_pt.jsonl"
+DATASET_GENERAL_PRE_TRAIN = "HuggingFaceTB/smollm-corpus"
+DATASET_GENERAL_SUBSET_PRE_TRAIN = "cosmopedia-v2"
 DATASET_INSTRUCTION_TRAIN = "dataset_it.jsonl"
 
 DIRECTORY_PRE_TRAIN = "./pre_train_dir"

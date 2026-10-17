@@ -1,10 +1,12 @@
 import torch
-from datasets import Dataset
+from datasets import Dataset, concatenate_datasets, load_dataset
 from transformers import AutoTokenizer, TrainingArguments
 from trl import SFTConfig
 
 from config import (
     CHAT_TEMPLATE,
+    DATASET_GENERAL_PRE_TRAIN,
+    DATASET_GENERAL_SUBSET_PRE_TRAIN,
     DATASET_INSTRUCTION_TRAIN,
     DATASET_PRE_TRAIN,
     DIRECTORY_INSTRUCTION_TRAIN,
@@ -39,7 +41,17 @@ def tokenize_function_pre_train(examples: dict):
     )
 
 
-tokenized_dataset_pre_train = Dataset.from_json(path_or_paths=DATASET_PRE_TRAIN).map(
+dataset_custom_pre_train = Dataset.from_json(path_or_paths=DATASET_PRE_TRAIN)
+dataset_general_pre_train = load_dataset(
+    DATASET_GENERAL_PRE_TRAIN,
+    DATASET_GENERAL_SUBSET_PRE_TRAIN,
+    split=f"train[:{len(dataset_custom_pre_train*4)}]",
+).select_columns(["text"])
+dataset_pre_train = concatenate_datasets(
+    [dataset_custom_pre_train, dataset_general_pre_train]
+).shuffle(seed=14565)
+
+tokenized_dataset_pre_train = dataset_pre_train.map(
     tokenize_function_pre_train,
     batched=True,
     remove_columns=["text"],
