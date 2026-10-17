@@ -5,6 +5,7 @@ from trl import SFTConfig
 
 from config import (
     CHAT_TEMPLATE,
+    DATASET_GENERAL_ITEMS_PER_CUSTOM_ITEM,
     DATASET_GENERAL_PRE_TRAIN,
     DATASET_GENERAL_SUBSET_PRE_TRAIN,
     DATASET_INSTRUCTION_TRAIN,
@@ -43,14 +44,14 @@ def tokenize_function_pre_train(examples: dict):
 
 dataset_custom_pre_train = Dataset.from_json(path_or_paths=DATASET_PRE_TRAIN)
 
+num_general_samples = len(dataset_custom_pre_train) * DATASET_GENERAL_ITEMS_PER_CUSTOM_ITEM
+
 stream_general_pre_train = load_dataset(
     DATASET_GENERAL_PRE_TRAIN,
     DATASET_GENERAL_SUBSET_PRE_TRAIN,
     split="train",
     streaming=True,
-)
-
-num_general_samples = len(dataset_custom_pre_train) * 4
+).shuffle(seed=14565, buffer_size=num_general_samples * EPOCHS_PRE_TRAIN)
 
 general_samples = list(stream_general_pre_train.select_columns(["text"]).take(num_general_samples))
 dataset_general_pre_train = Dataset.from_list(general_samples)

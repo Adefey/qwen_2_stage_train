@@ -7,6 +7,9 @@ services:
       - MODEL_NAME=Qwen/Qwen3.5-0.8B-Base
       - OMP_NUM_THREADS=8
       - MKL_NUM_THREADS=8
+      - PRE_TRAIN=1
+      - INSTRUCTION_TRAIN=1
+      - INFERENCE=1
       - HF_TOKEN=...
       - WANDB_PROJECT=...
       - WANDB_API_KEY=...
