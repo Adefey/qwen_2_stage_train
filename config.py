@@ -13,7 +13,7 @@ MAX_SEQ_LENGTH = 512
 DATASET_PRE_TRAIN = "dataset_pt.jsonl"
 DATASETS_GENERAL_PRE_TRAIN = [
     ("HuggingFaceTB/smollm-corpus", "cosmopedia-v2"),
-    ("wikipedia/wikipedia", "20231101.ru"),
+    ("wikimedia/wikipedia", "20231101.ru"),
 ]
 DATASET_GENERAL_TOKENS_PER_CUSTOM_TOKEN = 2.0
 DATASET_GENERAL_EVAL_ITEMS_PER_SOURCE = 24
