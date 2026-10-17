@@ -80,6 +80,9 @@ training_args_pre_train = TrainingArguments(
     bf16=use_bf16,
     fp16=False,
     use_cpu=(device == "cpu"),
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=8,
+    gradient_checkpointing=True,
 )
 
 raw_dataset_instruction_train = Dataset.from_json(path_or_paths=DATASET_INSTRUCTION_TRAIN)
@@ -101,4 +104,7 @@ sft_config = SFTConfig(
     bf16=use_bf16,
     fp16=False,
     use_cpu=(device == "cpu"),
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=8,
+    gradient_checkpointing=True,
 )
