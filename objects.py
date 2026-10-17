@@ -43,12 +43,17 @@ def tokenize_function_pre_train(examples: dict):
 
 dataset_custom_pre_train = Dataset.from_json(path_or_paths=DATASET_PRE_TRAIN)
 
-dataset_general_pre_train = load_dataset(
+stream_general_pre_train = load_dataset(
     DATASET_GENERAL_PRE_TRAIN,
     DATASET_GENERAL_SUBSET_PRE_TRAIN,
-    split=f"train[:{len(dataset_custom_pre_train)*4}]",
+    split="train",
     streaming=True,
-).select_columns(["text"])
+)
+
+num_general_samples = len(dataset_custom_pre_train) * 4
+
+general_samples = list(stream_general_pre_train.select_columns(["text"]).take(num_general_samples))
+dataset_general_pre_train = Dataset.from_list(general_samples)
 
 dataset_pre_train = concatenate_datasets(
     [dataset_custom_pre_train, dataset_general_pre_train]
