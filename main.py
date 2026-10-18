@@ -207,8 +207,14 @@ if inference_enabled:
     if im_end_id is not None and im_end_id not in stop_token_ids:
         stop_token_ids.append(im_end_id)
 
+    tuned_model_path = os.environ.get("INFERENCE_MODEL_PATH")
+
     models_eval = {}
-    for model_label, model_path in [("base", MODEL_NAME), ("tuned", DIRECTORY_INSTRUCTION_TRAIN)]:
+    for model_label, model_path in [
+        ("base", MODEL_NAME),
+        ("pre_trained", DIRECTORY_PRE_TRAIN),
+        ("instruction_trained", DIRECTORY_INSTRUCTION_TRAIN),
+    ]:
         logger.info(f"Loading {model_label} model from {model_path}")
         models_eval[model_label] = AutoModelForCausalLM.from_pretrained(
             model_path, dtype=torch.bfloat16
@@ -241,11 +247,11 @@ if inference_enabled:
                     pad_token_id=tokenizer_instruction_train.pad_token_id,
                 )
 
-        response = tokenizer_instruction_train.decode(
-            output_ids[0][prompt_length:],
-            skip_special_tokens=True,
-        )
-        print(f"{i + 1} [{model_label}]: {response.strip()}")
+            response = tokenizer_instruction_train.decode(
+                output_ids[0][prompt_length:],
+                skip_special_tokens=True,
+            )
+            print(f"{i + 1} [{model_label}]: {response.strip()}")
 else:
     logger.info(f"Skipping Inference")
 
