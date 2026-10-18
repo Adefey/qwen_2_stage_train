@@ -200,6 +200,14 @@ if inference_enabled:
             "Translate to English: «Кошка спит на подоконнике».",
             "The cat is sleeping on the windowsill",
         ),
+        (
+            "What model are you and what do you know?",
+            "Базовые данные о модели, хотя бы то что она Qwen",
+        ),
+        (
+            "Ты знаешь что нибудь об Adefe, Tesen_Desk, Mokitaki and ninekeem?",
+            "Должна сказать что Mokitaki не знает",
+        ),
     ]
 
     stop_token_ids = [tokenizer_instruction_train.eos_token_id]
