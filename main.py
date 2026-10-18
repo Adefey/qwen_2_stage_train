@@ -9,7 +9,13 @@ import wandb
 from transformers import AutoModelForCausalLM, DataCollatorForLanguageModeling, Trainer
 from trl import SFTTrainer
 
-from config import DATA_TYPE, DIRECTORY_INSTRUCTION_TRAIN, DIRECTORY_PRE_TRAIN, MODEL_NAME
+from config import (
+    DATA_TYPE,
+    DIRECTORY_INSTRUCTION_TRAIN,
+    DIRECTORY_PRE_TRAIN,
+    MAX_SEQ_LENGTH,
+    MODEL_NAME,
+)
 from objects import (
     device,
     raw_dataset_instruction_eval,
@@ -208,6 +214,13 @@ if inference_enabled:
             "Ты знаешь что нибудь об Adefe, Tesen_Desk, Mokitaki and ninekeem?",
             "Должна сказать что Mokitaki не знает",
         ),
+        ("А кто такой Иван Болван?", "Не должен знать такого"),
+        (
+            "Напиши короткий рассказ про Adefe и Tesen_Desk",
+            "Что нибудь интересное с реальными фактами",
+        ),
+        ("Напиши короткий рассказ про Димку Фыррку и Чаоса", "Маленький рассказ, фактов меньше"),
+        ("Как думаешь, среди знакомых ninekeem есть знакомые Adefe?", "Ответ - нет"),
     ]
 
     stop_token_ids = [tokenizer_instruction_train.eos_token_id]
@@ -248,7 +261,7 @@ if inference_enabled:
             with torch.no_grad():
                 output_ids = model_eval.generate(
                     **inputs,
-                    max_new_tokens=192,
+                    max_new_tokens=MAX_SEQ_LENGTH,
                     do_sample=False,
                     repetition_penalty=1.1,
                     eos_token_id=stop_token_ids,
