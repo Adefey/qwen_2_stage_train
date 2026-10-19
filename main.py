@@ -254,8 +254,8 @@ if inference_enabled:
         inputs = inputs.to(device)
         prompt_length = inputs["input_ids"].shape[-1]
 
-        print(f"\n{i + 1} User: {test_message}")
-        print(f"{i + 1} Expected: {expected_answer}")
+        logger.info(f"\n{i + 1} User: {test_message}")
+        logger.info(f"{i + 1} Expected: {expected_answer}")
 
         for model_label, model_eval in models_eval.items():
             with torch.no_grad():
@@ -272,9 +272,9 @@ if inference_enabled:
                 output_ids[0][prompt_length:],
                 skip_special_tokens=True,
             )
-            print(f"{i + 1} [{model_label}]: {response.strip()}")
+            logger.info(f"{i + 1} [{model_label}]: {response.strip()}")
 else:
     logger.info(f"Skipping Inference")
 
 
-print("Exiting")
+logger.info("Exiting")
